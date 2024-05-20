@@ -21,17 +21,33 @@ router.post('/name', function(req, res,) {
 })
 })
 
-;
-router.get('/all', (req, res) => {
-  Category.find({})
-      .then(data => {
-          if (data) {
-              const names = data.map(Category => Category.name);
-              res.json({ result: true, CategoryNames: names });
-          } else {
-              res.json({ result: false, error: 'No sous-categories found' });
-          }
-      })
-  })
 
+  router.get('/all', (req, res) => {
+    Category.find({})
+        .then(data => {
+            if (data) {
+                const names = data.map(data => data.name);
+                res.json({ result: true, CategoryNames: names });
+            } else {
+                res.json({ result: false, error: 'No sous-categories found' });
+            }
+        })
+    })
+
+//findOne Category name en sorti ID
+
+    router.get('/:categoryName', (req, res) => {
+      const categoryName = req.params.categoryName;
+      const regex = new RegExp(categoryName, 'i');
+      Category.findOne({name: regex})
+          .then(category => {
+              if (category) {
+                  res.json({ result: true, category: {name: category.name, id: category._id} });
+              } else {
+                  res.json({ result: false, error: 'No category found with this name' });
+              }
+          })
+
+  })
+  //findone Category name en srotie ID
 module.exports = router;

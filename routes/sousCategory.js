@@ -24,10 +24,10 @@ router.post('/name', function(req, res,) {
 })
 
 // route des auteurs 
-router.post('/authors/:sousCategoryId', (req, res) => {
-    sousCategory.findById(req.params.sousCategoryId).then(sousCategory => {
-        const sousCategoryId = req.params.sousCategoryId;
-        console.log(sousCategoryId)
+router.post('/authors/:sousCategoryName', (req, res) => {
+    let sousCategoryName = req.params.sousCategoryName.replaceAll('_',' ');
+    sousCategory.findOne({name: sousCategoryName}).then(sousCategory => {
+        console.log(sousCategoryName)
         if (sousCategory === null) {
             res.json({ result: false, error: 'Sous-category not found' });
         } else {
@@ -36,7 +36,7 @@ router.post('/authors/:sousCategoryId', (req, res) => {
             } else {
                 sousCategory.authors.push(req.body.name);
                 sousCategory.save().then(updatedSousCategory => {
-                    console.log(sousCategoryId)
+                    console.log(sousCategoryName)
                     res.json({ result: true, allAuthors: updatedSousCategory.authors });
                 });
             }
@@ -44,7 +44,6 @@ router.post('/authors/:sousCategoryId', (req, res) => {
     });
 });
 // route get des sous catégories 
-
 router.get('/all', (req, res) => {
     sousCategory.find({})
         .then(data => {
@@ -57,17 +56,33 @@ router.get('/all', (req, res) => {
         })
     })
 
+// route get de tout les auteurs
+        router.get('/allAuthors', (req, res) => {
+            sousCategory.find({})
+            .then(data => {
+                if (data) {
+                    const namesAuthors = data.map(data => data.authors);
+                    res.json({ result: true, allAuthors: namesAuthors });
+                } else {
+                    res.json({ result: false, error: 'No authors found' });
+                }
+            })
+    })
 
-    router.get('/allAuthors', (req, res) => {
-        sousCategory.find({})
+//route get recupere l'id via le nom
+router.get('/:sousCategoryName', (req, res) => {
+    const sousCategoryName = req.params.sousCategoryName;
+    const regex = new RegExp(sousCategoryName, 'i');
+    sousCategory.findOne({name: regex})
         .then(data => {
             if (data) {
-                const namesAuthors = data.map(sousCategory => sousCategory.authors);
-                res.json({ result: true, allAuthors: namesAuthors });
+                console.log(data)
+                res.json({ result: true, sousCategory: {name: data.name, id: data._id} });
             } else {
-                res.json({ result: false, error: 'No authors found' });
+                res.json({ result: false, error: 'No category found with this name' });
             }
         })
-        })
+
+})
     
 module.exports = router;
