@@ -9,7 +9,7 @@ router.post('/name', function(req, res,) {
  Category.findOne({name: req.body.name}).then(data => {
   if (data === null){
 
-  const newCategory = new Category ({
+  const newCategory = new Category({
     name: req.body.name,
   })
   newCategory.save().then(dataCategory=> {
@@ -20,7 +20,18 @@ router.post('/name', function(req, res,) {
   }
 })
 })
-;
 
+;
+router.get('/all', (req, res) => {
+  Category.find({})
+      .then(data => {
+          if (data) {
+              const names = data.map(Category => Category.name);
+              res.json({ result: true, CategoryNames: names });
+          } else {
+              res.json({ result: false, error: 'No sous-categories found' });
+          }
+      })
+  })
 
 module.exports = router;
