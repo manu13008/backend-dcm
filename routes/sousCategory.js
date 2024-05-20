@@ -71,7 +71,7 @@ router.get('/all', (req, res) => {
 
 //route get recupere l'id via le nom
 router.get('/:sousCategoryName', (req, res) => {
-    const sousCategoryName = req.params.sousCategoryName;
+    let sousCategoryName = req.params.sousCategoryName.replaceAll('_',' ');
     const regex = new RegExp(sousCategoryName, 'i');
     sousCategory.findOne({name: regex})
         .then(data => {
