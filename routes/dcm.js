@@ -16,7 +16,7 @@ router.post('/send', function(req,res) {
                     const newDcm = new Dcm({
                         author: user._id,
                         content: req.body.content,
-                        subCategory: req.body.souscategory,
+                        subCategory: req.body.subCategory,
                         origins:req.body.origins,
                         target:req.body.target,
                         likes:[],
