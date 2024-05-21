@@ -77,7 +77,8 @@ router.get('/:sousCategoryName', (req, res) => {
 // recuperer tout les DCM d'un utilisateur via le token
 router.get('/user/:token', (req, res) => {
     const userToken = req.params.token; 
-    User.findOne({ username: userToken }) 
+    const regex = new RegExp(userToken, 'i');
+    User.findOne({ username: regex }) 
         .then(user => {
             if (!user) {
                 res.json({ result: false, error: 'No user found with this username' });
