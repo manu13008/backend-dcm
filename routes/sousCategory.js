@@ -3,6 +3,8 @@ var router = express.Router();
 require('../models/sousCategory');
 
 const sousCategory = require('../models/sousCategory');
+const Category = require('../models/category');
+
 // route ajout de sous categories
 router.post('/name', function(req, res,) {
  
@@ -55,6 +57,25 @@ router.get('/all', (req, res) => {
             }
         })
     })
+
+// route get des sous catégories par leurs catégories 
+    router.get('/oneCategory/:onecate', (req, res) => {
+        let onecate = req.params.onecate.replaceAll('_',' ');
+        const regex = new RegExp(onecate, 'i');
+        Category.findOne({name: regex})
+            .then(category => {
+                if (category) {
+                    console.log('ok')
+                sousCategory.find({category: category._id})
+                .then(sousCategoryData => {
+                    res.json({result:true, category:{name: category.name}, id:category._id, sousCategory:sousCategoryData})
+                })
+                } else {
+                    res.json({ result: false, error: 'No category found with this SubCategory' });
+                }
+            })
+    })
+
 
 // route get de tout les auteurs
         router.get('/allAuthors', (req, res) => {

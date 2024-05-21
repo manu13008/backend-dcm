@@ -4,10 +4,10 @@ const dcmSchema = mongoose.Schema({
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
     content:String,
     subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'souscategory' },
-    origin: String,
+    origins: String,
     target: String,
-    likes:{ type: mongoose.Schema.Types.ObjectId, ref: 'user' },
-    dislikes: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+    likes:[{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
+    dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
     date: Date,
     type:Boolean,
 
