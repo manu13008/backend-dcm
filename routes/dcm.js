@@ -16,7 +16,7 @@ router.post('/send', function(req,res) {
                     const newDcm = new Dcm({
                         author: user._id,
                         content: req.body.content,
-                        subCategory: req.body.souscategory,
+                        subCategory: req.body.subCategory,
                         origins:req.body.origins,
                         target:req.body.target,
                         likes:[],
@@ -74,28 +74,22 @@ router.get('/:sousCategoryName', (req, res) => {
         })
 
 })
-// recuperer tout les DCM d'un utilisateur
-router.get('/user/:usernameId', (req, res) => {
-    console.log("ok");
-    let usernameId = req.params.usernameId.replaceAll('_',' ');
-    const regex = new RegExp(usernameId, 'i');
-    console.log("regex :", regex);
-    User.findOne({username: regex})
-        .then(data => {
-            console.log(data)
-            if (data) {
-               Dcm.find({author: data._id})
-               .then(dcmData => {
-                console.log(dcmData)
-                res.json({result:true, username:{author: data.username}, id:data._id, dcm:dcmData})
-               })
+// recuperer tout les DCM d'un utilisateur via le token
+router.get('/user/:token', (req, res) => {
+    const userToken = req.params.token; 
+    const regex = new RegExp(userToken, 'i');
+    User.findOne({ username: regex }) 
+        .then(user => {
+            if (!user) {
+                res.json({ result: false, error: 'No user found with this username' });
             } else {
-                res.json({ result: false, error: 'No DCM found with this name' });
+                Dcm.find({ author: user._id })
+                    .then(dcmData => {
+                        res.json({ result: true, username: { author: user.username }, id: user._id, dcm: dcmData });
+                    })
             }
         })
-
-})
-
+    })
 // supprimer un dcm
 router.delete('/deletedcm/:id', (req, res) => {
     const userId = req.userId;
