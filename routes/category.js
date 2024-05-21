@@ -37,7 +37,7 @@ router.post('/name', function(req, res,) {
 //findOne Category name en sorti ID
 
     router.get('/:categoryName', (req, res) => {
-      const categoryName = req.params.categoryName;
+      let categoryName = req.params.categoryName.replaceAll('_',' ');
       const regex = new RegExp(categoryName, 'i');
       Category.findOne({name: regex})
           .then(category => {
