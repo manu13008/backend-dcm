@@ -6,6 +6,10 @@ const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
+function validateEmail(email) {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|fr)$/;
+  return emailRegex.test(email);
+}
 // POST '/user/signup' => se créer un compte
 router.post("/signup", (req, res) => {
   if (!checkBody(req.body, ["username", "email", "password"])) {
@@ -14,6 +18,11 @@ router.post("/signup", (req, res) => {
   }
 
   const { username, email, password } = req.body;
+  // Validation de l'email
+  if (!validateEmail(email)) {
+    res.json({ result: false, error: "Invalid email format" });
+    return;
+  }
 
   // Vérifiez si le nom d'utilisateur ou l'email existent déjà dans la base de données
   User.findOne({ $or: [{ email: email }, { username: username }] })
@@ -48,6 +57,8 @@ router.post("/signup", (req, res) => {
       res.status(500).json({ result: false, error: "Database error" });
     });
 });
+
+// Validation de l'email
 
 // POST '/user/signin' => se connecter
 router.post("/signin", (req, res) => {
