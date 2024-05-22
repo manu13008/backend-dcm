@@ -11,8 +11,14 @@ var usersRouter = require("./routes/users");
 var categoryRouter = require("./routes/category");
 var sousCategoryRouter = require("./routes/sousCategory");
 var dcmRouter = require("./routes/dcm");
-
 var app = express();
+
+//Middleware de connection
+const { authenticateToken } = require('./modules/authentication')
+app.use(authenticateToken, (req, res, next) => {
+    console.log('tata')
+    next()
+});
 
 const middleware = require("middleware");
 const cors = require("cors");
@@ -29,5 +35,7 @@ app.use("/users", usersRouter);
 app.use("/category", categoryRouter);
 app.use("/souscategory", sousCategoryRouter);
 app.use("/dcm", dcmRouter);
+
+
 
 module.exports = app;
