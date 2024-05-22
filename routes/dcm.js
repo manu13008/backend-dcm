@@ -43,11 +43,35 @@ router.post('/send', authenticateToken, function(req,res) {
 })
 // recuperer tout les Derniers DCM
 router.get('/lastDcm', (req,res)=> {
-    Dcm.find().sort({_id:-1}).limit(10).then(data =>{
-        if(data){
-            res.json({result:true, data})
-        }else{
-            res.json({result:false, error:'No DCM found'})
+    Dcm.find()
+    .sort({ _id: -1 })
+    .limit(10)
+    .populate({
+        path: 'author', 
+        select: 'username', 
+        model: User, 
+    }).populate({
+        path: 'subCategory', 
+        select: 'name', 
+        model: sousCategory, 
+    })
+    .then(data => {
+        if (data) {
+            const formattedData = data.map(item => {
+                // Convertir la date au format souhaité (JJ/MM/YYYY)
+                const formattedDate = new Date(item.date).toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                });
+                return {
+                    ...item._doc,
+                    date: formattedDate,
+                };
+            });
+            res.json({ result: true, data: formattedData });
+        } else {
+            res.json({ result: false, error: 'Aucun DCM trouvé' });
         }
     })
 })
