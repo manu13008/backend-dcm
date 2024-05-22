@@ -10,6 +10,7 @@ const dcmSchema = mongoose.Schema({
     dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
     date: Date,
     type: {type: Boolean ,required: true },
+    isAnonym : {type: Boolean},
 
 })
 const dcm = mongoose.model('dcm', dcmSchema);
