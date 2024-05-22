@@ -90,6 +90,8 @@ router.get('/user/:token', (req, res) => {
             }
         })
     })
+
+
 // supprimer un dcm
 router.delete('/deletedcm/:id', (req, res) => {
     const userId = req.userId;
