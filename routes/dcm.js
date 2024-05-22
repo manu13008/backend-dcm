@@ -55,8 +55,112 @@ router.get('/lastDcm', (req,res)=> {
         }
     })
 })
-// recuperer tout les DCM d'une sous catégories
 
+
+// Récupérer des dcm aléatoires 
+router.get('/random', (req,res)=> {
+    Dcm.aggregate([ { $sample: { size: 20 } } ]).then(data => {
+        if (data){
+            res.json({result : true, data})
+        } else {
+            res.json({result : false, error:'No random DCM found'})
+        }
+    })
+})
+
+// Récupérer les dcm les plus likés de tous les temps : classement par la meilleure différence 
+// entre positif et négatif
+router.get('/mostLiked', (req,res)=> {
+    Dcm.aggregate([
+        {
+            $addFields: {
+                likeCount: { $size: "$likes" },
+                dislikeCount: { $size: "$dislikes" },
+                difference: { $subtract: [{ $size: "$likes" }, { $size: "$dislikes" }] }
+             
+          }
+        },
+        {
+          $sort: { difference: -1 } // -1 pour un tri décroissant, 1 pour un tri croissant
+        }
+      ]).then(data => {
+        if (data) {
+            res.json({result : true, data})
+        } else {
+            res.json({result : false, error : 'No dcm find or impossible to order them'})
+        }
+      })
+    })
+
+
+// Récupérer les dcm COUP DE COEUR les plus likés de tous les temps : classement par la meilleure différence 
+// entre positif et négatif
+router.get('/mostLikedHeart', (req,res)=> {
+    Dcm.aggregate([
+        {
+            $match: { type: true } ,// Filtrer les documents où type est true (coup de coeur)
+        },
+        {
+            $addFields: {
+                likeCount: { $size: "$likes" },
+                dislikeCount: { $size: "$dislikes" },
+                difference: { $subtract: [{ $size: "$likes" }, { $size: "$dislikes" }] }
+             
+          }
+        },
+        {
+          $sort: { difference: -1 } // -1 pour un tri décroissant, 1 pour un tri croissant
+        }
+      ]).then(data => {
+        if (data) {
+            res.json({result : true, data})
+        } else {
+            res.json({result : false, error : 'No dcm find or impossible to order them'})
+        }
+      })
+
+})
+
+
+
+// Récupérer les dcm COUP DE GUEULE les plus likés de tous les temps : classement par la meilleure différence 
+// entre positif et négatif
+router.get('/mostLikedHate', (req,res)=> {
+    Dcm.aggregate([
+        {
+            $match: { type: false } ,// Filtrer les documents où type est false(coup de gueule)
+        },
+        {
+            $addFields: {
+                likeCount: { $size: "$likes" },
+                dislikeCount: { $size: "$dislikes" },
+                difference: { $subtract: [{ $size: "$likes" }, { $size: "$dislikes" }] }
+             
+          }
+        },
+        {
+          $sort: { difference: -1 } // -1 pour un tri décroissant, 1 pour un tri croissant
+        }
+      ]).then(data => {
+        if (data) {
+            res.json({result : true, data})
+        } else {
+            res.json({result : false, error : 'No dcm find or impossible to order them'})
+        }
+      })
+
+})
+
+
+    
+    
+    
+
+
+
+
+
+// recuperer tout les DCM d'une sous catégories
 router.get('/:sousCategoryName', (req, res) => {
     let sousCategoryName = req.params.sousCategoryName.replaceAll('_',' ');
     const regex = new RegExp(sousCategoryName, 'i');
@@ -74,6 +178,8 @@ router.get('/:sousCategoryName', (req, res) => {
         })
 
 })
+
+
 // recuperer tout les DCM d'un utilisateur via le token
 router.get('/user/:token', (req, res) => {
     const userToken = req.params.token; 
