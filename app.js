@@ -14,6 +14,13 @@ var dcmRouter = require("./routes/dcm");
 const likesRoutes = require("./routes/likes");
 var app = express();
 
+//Middleware de connection
+const { authenticateToken } = require('./modules/authentication')
+app.use(authenticateToken, (req, res, next) => {
+    console.log('tata')
+    next()
+});
+
 const middleware = require("middleware");
 const cors = require("cors");
 app.use(cors());
@@ -30,5 +37,7 @@ app.use("/category", categoryRouter);
 app.use("/souscategory", sousCategoryRouter);
 app.use("/dcm", dcmRouter);
 app.use("/likes", likesRoutes);
+
+
 
 module.exports = app;
