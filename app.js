@@ -13,14 +13,6 @@ var sousCategoryRouter = require("./routes/sousCategory");
 var dcmRouter = require("./routes/dcm");
 var app = express();
 
-//Middleware de connection
-const { authenticateToken } = require('./modules/authentication')
-app.use(authenticateToken, (req, res, next) => {
-    console.log('tata')
-    next()
-});
-
-const middleware = require("middleware");
 const cors = require("cors");
 app.use(cors());
 

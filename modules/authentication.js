@@ -4,7 +4,7 @@ function authenticateToken(req, res, next) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
    
-    if (!token) return res.sendStatus(401).json('unauthorized');
+    if (!token) { res.sendStatus(401).json('unauthorized') }
    
     jwt.verify(token, process.ENV.JWT_SECRET, (err, userId) => {
       if (err) return res.sendStatus(403);
@@ -16,7 +16,7 @@ function authenticateToken(req, res, next) {
 }
 
 function createToken(userId) {
-    const token = jwt.sign({ userId: userId }, process.ENV.JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ id: userId }, process.ENV.JWT_SECRET, { expiresIn: '24h' });
     return token
 }
 
