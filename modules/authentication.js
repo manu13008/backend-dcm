@@ -6,7 +6,7 @@ function authenticateToken(req, res, next) {
    
     if (!token) { res.sendStatus(401).json('unauthorized') }
    
-    jwt.verify(token, process.ENV.JWT_SECRET, (err, userId) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, userId) => {
       if (err) return res.sendStatus(403);
       req.userId = userId;
       next();

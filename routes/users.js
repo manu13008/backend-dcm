@@ -32,7 +32,7 @@ router.post("/signup", (req, res) => {
     .then((data) => {
       if (data) {
         // Si un utilisateur avec cet email ou ce nom d'utilisateur existe déjà, renvoyez une erreur
-        res.json({ result: false, error: "Adresse e-mail ou nom d'utilisateurt déjà utilisé" });
+        res.json({ result: false, error: "Adresse e-mail ou nom d'utilisateur déjà utilisé" });
       } else {
         // Sinon, créez un nouveau compte utilisateur
         const hash = bcrypt.hashSync(password, 10);
