@@ -11,7 +11,7 @@ var usersRouter = require("./routes/users");
 var categoryRouter = require("./routes/category");
 var sousCategoryRouter = require("./routes/sousCategory");
 var dcmRouter = require("./routes/dcm");
-
+const likesRoutes = require("./routes/likes");
 var app = express();
 
 const middleware = require("middleware");
@@ -29,5 +29,6 @@ app.use("/users", usersRouter);
 app.use("/category", categoryRouter);
 app.use("/souscategory", sousCategoryRouter);
 app.use("/dcm", dcmRouter);
+app.use("/likes", likesRoutes);
 
 module.exports = app;
