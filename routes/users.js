@@ -5,22 +5,25 @@ const User = require("../models/users");
 const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
+const { authenticateToken, createToken } = require('../modules/authentication')
+
 
 function validateEmail(email) {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|fr)$/;
   return emailRegex.test(email);
 }
+
 // POST '/user/signup' => se créer un compte
 router.post("/signup", (req, res) => {
   if (!checkBody(req.body, ["username", "email", "password"])) {
-    res.json({ result: false, error: "Missing fields" });
+    res.json({ result: false, error: "Tous les champs ne sont pas remplis" });
     return;
   }
 
   const { username, email, password } = req.body;
   // Validation de l'email
   if (!validateEmail(email)) {
-    res.json({ result: false, error: "Invalid email format" });
+    res.json({ result: false, error: "Format d'adresse e-mail invalide" });
     return;
   }
 
@@ -29,7 +32,7 @@ router.post("/signup", (req, res) => {
     .then((data) => {
       if (data) {
         // Si un utilisateur avec cet email ou ce nom d'utilisateur existe déjà, renvoyez une erreur
-        res.json({ result: false, error: "Username or email already exists" });
+        res.json({ result: false, error: "Adresse e-mail ou nom d'utilisateurt déjà utilisé" });
       } else {
         // Sinon, créez un nouveau compte utilisateur
         const hash = bcrypt.hashSync(password, 10);
@@ -37,8 +40,7 @@ router.post("/signup", (req, res) => {
         const newUser = new User({
           email: email,
           username: username,
-          password: hash,
-          token: uid2(32),
+          password: hash
         });
 
         newUser.save().then((newDoc) => {
@@ -46,86 +48,39 @@ router.post("/signup", (req, res) => {
             result: true,
             email: newDoc.email,
             username: newDoc.username,
-            token: newDoc.token,
             id: newDoc._id,
+            token: createToken(newDoc._id)
           });
         });
       }
     })
     .catch((error) => {
       // Gérer les erreurs de la base de données, par exemple une erreur de connexion à la base de données
-      res.status(500).json({ result: false, error: "Database error" });
+      res.status(500).json({ result: false, error: "Erreur de base de donnée" });
     });
 });
 
-// Validation de l'email
 
 // POST '/user/signin' => se connecter
 router.post("/signin", (req, res) => {
+  console.log(uid2(32))
   if (!checkBody(req.body, ["email", "password"])) {
     res.json({ result: false, error: "Missing fields" });
     return;
   }
 
   User.findOne({ email: req.body.email }).then((data) => {
-    if (bcrypt.compareSync(req.body.password, data.password)) {
+    if (data && bcrypt.compareSync(req.body.password, data.password)) {
       res.json({
         result: true,
-        token: data.token,
+        token: createToken(data.username),
         email: data.email,
+        username: data.username
       });
     } else {
-      res.json({ result: false, error: "User not found" });
+      res.json({ result: false, error: "E-mail ou mot de passe incorrect(s)" });
     }
   });
-});
-
-// GET '/user/logout' => se déconnecter
-router.get("/logout", (req, res) => {
-  // Récupère le token d'authentification depuis le corps de la requête
-  const token = req.body.token;
-
-  if (!token) {
-    res.status(400).json({ result: false, error: "Token not provided" });
-    return;
-  }
-  res.json({ result: true, message: "User logged out successfully" });
-});
-
-// GET 'users/:token" => recuperer par token
-router.get("/:token", (req, res) => {
-  console.log(req.body.token);
-  User.findOne({ token: req.body.token }).then((data) => {
-    if (data) {
-      res.json({ result: true, user: data });
-    } else {
-      res.json({ result: false, error: "User not found" });
-    }
-  });
-});
-
-// DELETE '/user/:username' => Supprimer mon compte
-router.delete("/", (req, res) => {
-  const username = req.body.username;
-
-  if (!username) {
-    res.status(400).json({
-      result: false,
-      error: "Username not provided in the request body",
-    });
-    return;
-  }
-  User.deleteOne({ username })
-    .then((deletedDoc) => {
-      if (deletedDoc.deletedCount > 0) {
-        res.json({ result: true });
-      } else {
-        res.status(404).json({ result: false, error: "User not found" });
-      }
-    })
-    .catch((error) => {
-      res.status(500).json({ result: false, error: error.message });
-    });
 });
 
 module.exports = router;
