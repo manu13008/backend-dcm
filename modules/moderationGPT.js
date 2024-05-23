@@ -43,5 +43,3 @@ async function moderationEvaluate(content) {
     if(result.criteria.length > 0) {result.toCensor = true}
     return result
 }
-
-console.log(moderationEvaluate('les noirs et les arabes sont des voleurs'))
