@@ -190,15 +190,6 @@ router.get('/mostLikedHate', (req,res)=> {
 
 })
 
-
-    
-    
-    
-
-
-
-
-
 // recuperer tout les DCM d'une sous catégories
 router.get('/:sousCategoryName', (req, res) => {
     let sousCategoryName = req.params.sousCategoryName.replaceAll('_',' ');
