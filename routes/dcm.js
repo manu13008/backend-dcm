@@ -46,7 +46,7 @@ router.post('/send', authenticateToken, function(req,res) {
 router.get('/lastDcm', (req,res)=> {
     Dcm.find()
     .sort({ _id: -1 })
-    .limit(10)
+    .limit(5)
     .populate({
         path: 'author', 
         select: 'username', 
@@ -79,15 +79,23 @@ router.get('/lastDcm', (req,res)=> {
 
 
 // Récupérer des dcm aléatoires 
-router.get('/random', (req,res)=> {
-    Dcm.aggregate([ { $sample: { size: 20 } } ]).then(data => {
-        if (data){
-            res.json({result : true, data})
-        } else {
-            res.json({result : false, error:'No random DCM found'})
-        }
+router.get('/random', (req, res) => {
+  Dcm.aggregate([{ $sample: { size: 20 } }])
+    .then(async data => {
+      const populatedData = await Dcm.populate(data, [
+        { path: 'author', select: 'username', model: User },
+        { path: 'subCategory', select: 'name', model: sousCategory }
+      ]);
+
+      if (populatedData) {
+        res.json({ result: true, data: populatedData });
+      } else {
+        res.json({ result: false, error: 'No random DCM found' });
+      }
     })
-})
+    .catch(error => res.json({ result: false, error: error.message }));
+});
+
 
 // Récupérer les dcm les plus likés de tous les temps : classement par la meilleure différence 
 // entre positif et négatif
@@ -104,11 +112,16 @@ router.get('/mostLiked', (req,res)=> {
         {
           $sort: { difference: -1 } // -1 pour un tri décroissant, 1 pour un tri croissant
         }
-      ]).then(data => {
-        if (data) {
-            res.json({result : true, data})
+      ]).then(async data => {
+        const populatedData = await Dcm.populate(data, [
+          { path: 'author', select: 'username', model: User },
+          { path: 'subCategory', select: 'name', model: sousCategory }
+        ]);
+    
+        if (populatedData) {
+          res.json({ result: true, data: populatedData });
         } else {
-            res.json({result : false, error : 'No dcm find or impossible to order them'})
+          res.json({ result: false, error: 'No DCM found or impossible to order them' });
         }
       })
     })
@@ -162,11 +175,16 @@ router.get('/mostLikedHate', (req,res)=> {
         {
           $sort: { difference: -1 } // -1 pour un tri décroissant, 1 pour un tri croissant
         }
-      ]).then(data => {
-        if (data) {
-            res.json({result : true, data})
+      ]).then(async data => {
+        const populatedData = await Dcm.populate(data, [
+          { path: 'author', select: 'username', model: User },
+          { path: 'subCategory', select: 'name', model: sousCategory }
+        ]);
+    
+        if (populatedData) {
+          res.json({ result: true, data: populatedData });
         } else {
-            res.json({result : false, error : 'No dcm find or impossible to order them'})
+          res.json({ result: false, error: 'No DCM found or impossible to order them' });
         }
       })
 
