@@ -9,6 +9,7 @@ const { authenticateToken } = require('../modules/authentication')
 const Dcm = require('../models/dcm');
 const sousCategory = require('../models/sousCategory');
 
+
 // poster un DCM
 router.post('/send', authenticateToken, function(req,res) {
     Dcm.findOne({content: req.body.content}).then(existingDcm => {
