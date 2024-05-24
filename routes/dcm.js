@@ -146,14 +146,18 @@ router.get('/mostLikedHeart', (req,res)=> {
         {
           $sort: { difference: -1 } // -1 pour un tri décroissant, 1 pour un tri croissant
         }
-      ]).then(data => {
-        if (data) {
-            res.json({result : true, data})
+      ]).then(async data => {
+        const populatedData = await Dcm.populate(data, [
+          { path: 'author', select: 'username', model: User },
+          { path: 'subCategory', select: 'name', model: sousCategory }
+        ]);
+    
+        if (populatedData) {
+          res.json({ result: true, data: populatedData });
         } else {
-            res.json({result : false, error : 'No dcm find or impossible to order them'})
+          res.json({ result: false, error: 'No DCM found or impossible to order them' });
         }
       })
-
 })
 
 
