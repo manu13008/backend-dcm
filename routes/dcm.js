@@ -24,6 +24,7 @@ router.post('/send', authenticateToken, function(req,res) {
                 dislikes:[],
                 date: Date.now(),
                 type: req.body.type === 'true',
+                isAnonym : req.body.isAnonym,
             })
             newDcm.save().then(savedDcm => {
                 console.log(savedDcm.origins)

@@ -73,7 +73,7 @@ router.post("/signin", (req, res) => {
     if (data && bcrypt.compareSync(req.body.password, data.password)) {
       res.json({
         result: true,
-        token: createToken(data.username),
+        token: createToken(data._id),
         email: data.email,
         username: data.username
       });

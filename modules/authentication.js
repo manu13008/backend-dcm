@@ -6,17 +6,16 @@ function authenticateToken(req, res, next) {
    
     if (!token) { res.sendStatus(401).json('unauthorized') }
    
-    jwt.verify(token, process.env.JWT_SECRET, (err, userId) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
       if (err) return res.sendStatus(403);
-      req.userId = userId;
-      next();
+      req.userId = user.userId;
     });
 
     next()
 }
 
 function createToken(userId) {
-    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({userId: userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
     return token
 }
 
