@@ -75,6 +75,7 @@ router.post("/signin", (req, res) => {
         result: true,
         token: createToken(data._id),
         email: data.email,
+        id: data._id,
         username: data.username
       });
     } else {
