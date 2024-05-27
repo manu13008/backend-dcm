@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 const Config = require('../models/config');
+const { authenticateToken } = require('../modules/authentication');
 
 router.get('/:configName', (req, res) => {
     Config.findOne({name: req.params.configName})
@@ -10,7 +11,7 @@ router.get('/:configName', (req, res) => {
     })
 })
 
-router.post('/:configName', (req, res) => {
+router.post('/:configName', authenticateToken, (req, res) => {
     Config.findOne({name: req.params.configName})
     .then(data => {
         if(data) {
