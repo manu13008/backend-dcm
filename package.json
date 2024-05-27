@@ -17,6 +17,7 @@
     "middleware": "^1.0.0",
     "mongoose": "^8.4.0",
     "morgan": "~1.9.1",
+    "redux-persist": "^6.0.0",
     "uid2": "^1.0.0"
   }
 }
