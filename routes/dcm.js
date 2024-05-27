@@ -217,40 +217,53 @@ router.get('/:sousCategoryName', (req, res) => {
 
 // recuperer tout les DCM d'un utilisateur via le token
 router.get('/user/:username', (req, res) => {
-    const username = req.params.username; 
-    const regex = new RegExp(username, 'i');
-    User.findOne({ username: regex }) 
-        .then(user => {
-            if (!user) {
-                res.json({ result: false, error: "Aucun utilisateur pour ce pseudonyme" });
-            } else {
-                Dcm.find({ author: user._id })
-                    .then(dcmData => {
-                        res.json({ result: true, author: user.username, dcm: dcmData });
-                    })
-            }
-        })
-    })
+  const username = req.params.username; 
+  const regex = new RegExp(username, 'i');
+  User.findOne({ username: regex }) 
+      .then(user => {
+          if (!user) {
+              res.json({ result: false, error: "Aucun utilisateur pour ce pseudonyme" });
+          } else {
+              Dcm.find({ author: user._id })
+                  .then(dcmData => {
+                      Dcm.populate(dcmData, [
+                          { path: 'author', select: 'username', model: User },
+                          { path: 'subCategory', select: 'name', model: sousCategory }
+                      ]).then(populatedData => {
+                          res.json({ result: true, author: user.username, dcm: populatedData });
+                      });
+                  });
+          }
+      })
+      .catch(error => res.json({ result: false, error: error.message }));
+});
 
 
 // supprimer une dcm
 router.delete('/deletedcm/:id', authenticateToken, (req, res) => {
-    const userId = req.userId;
+  const userId = req.userId;
 
-    Dcm.findOne({_id: req.params.id})
-    .then(data => {
-        !(data.author === req.userId) && res.sendStatus(401).json({result: false, error: "Vous n'êtes pas autorisé à supprimer cette DCM"})
-    })
+  Dcm.findOne({ _id: req.params.id })
+      .then(data => {
+          if (!data) {
+              return res.status(404).json({ result: false, error: "Pas de DCM trouvée pour cet identifiant" });
+          }
 
-    Dcm.findOneAndDelete({ _id: req.params.id })
-        .then(deletedDcm => {
-            if (deletedDcm) {
-                res.json({ result: true, message: 'DCM supprimée avec succès' });
-            } else {
-                res.json({ result: false, error: 'Pas de DCM trouvée pour cet identifiant' });
-            }
-        })
-})
+          if (data.author.toString() !== userId) {
+              return res.status(401).json({ result: false, error: "Vous n'êtes pas autorisé à supprimer cette DCM" });
+          }
+
+          return Dcm.findOneAndDelete({ _id: req.params.id });
+      })
+      .then(deletedDcm => {
+          if (deletedDcm) {
+              res.json({ result: true, message: 'DCM supprimée avec succès' });
+          }
+      })
+      .catch(err => {
+          res.status(500).json({ result: false, error: err.message });
+      });
+});
 
 
 
