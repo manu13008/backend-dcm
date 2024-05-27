@@ -10,7 +10,7 @@ router.get('/:configName', (req, res) => {
     })
 })
 
-router.get('/:configName', (req, res) => {
+router.post('/:configName', (req, res) => {
     Config.findOne({name: req.params.configName})
     .then(data => {
         if(data) {

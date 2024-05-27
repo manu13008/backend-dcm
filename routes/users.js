@@ -40,7 +40,8 @@ router.post("/signup", (req, res) => {
         const newUser = new User({
           email: email,
           username: username,
-          password: hash
+          password: hash,
+          isAdmin: false
         });
 
         newUser.save().then((newDoc) => {
@@ -49,7 +50,7 @@ router.post("/signup", (req, res) => {
             email: newDoc.email,
             username: newDoc.username,
             id: newDoc._id,
-            token: createToken(newDoc._id)
+            token: createToken({userId: newDoc._id, isAdmin: newDoc.isAdmin})
           });
         });
       }
@@ -73,7 +74,7 @@ router.post("/signin", (req, res) => {
     if (data && bcrypt.compareSync(req.body.password, data.password)) {
       res.json({
         result: true,
-        token: createToken(data._id),
+        token: createToken({userId: data._id, isAdmin: data.isAdmin}),
         email: data.email,
         id: data._id,
         username: data.username
