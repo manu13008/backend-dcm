@@ -212,6 +212,7 @@ router.get('/:sousCategoryName', (req, res) => {
                       res.json({ result: true, sousCategory: { name: data.name }, id: data._id, dcm: dcmData });
                   });
           } else {
+            
               res.json({ result: false, error: 'No DCM found with this name' });
           }
       })
