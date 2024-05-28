@@ -196,21 +196,25 @@ router.get('/mostLikedHate', (req,res)=> {
 })
 
 // recuperer tout les DCM d'une sous catégories
+
 router.get('/:sousCategoryName', (req, res) => {
-    let sousCategoryName = req.params.sousCategoryName.replaceAll('_',' ');
-    const regex = new RegExp(sousCategoryName, 'i');
-    sousCategory.findOne({name: regex})
-        .then(data => {
-            if (data) {
-                console.log('ok')
-               Dcm.find({subCategory: data._id})
-               .then(dcmData => {
-                res.json({result:true, sousCategory:{name: data.name}, id:data._id, dcm:dcmData})
-               })
-            } else {
-                res.json({ result: false, error: 'No DCM found with this name' });
-            }
-        })
+  let sousCategoryName = req.params.sousCategoryName.replaceAll('_', ' ');
+  const regex = new RegExp(sousCategoryName, 'i');
+  
+  sousCategory.findOne({ name: regex })
+      .then(data => {
+          if (data) {
+              console.log('ok');
+              Dcm.find({ subCategory: data._id })
+                  .populate({ path: 'author', select: 'username', model: User })
+                  .populate({ path: 'subCategory', select: 'name', model: sousCategory })
+                  .then(dcmData => {
+                      res.json({ result: true, sousCategory: { name: data.name }, id: data._id, dcm: dcmData });
+                  });
+          } else {
+              res.json({ result: false, error: 'No DCM found with this name' });
+          }
+      })
 
 })
 
