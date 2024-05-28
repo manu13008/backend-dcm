@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 require('../models/dcm');
 const User=require('../models/users');
+const Notification = require('../models/notification');
 
 const { authenticateRegular } = require('../modules/authentication')
 
@@ -45,31 +46,52 @@ router.post('/send', authenticateRegular, function(req,res) {
     })   
 })
 // recuperer tout les Derniers DCM
-router.get('/lastDcm', (req, res) => {
-  Dcm.find()
-  .sort({ _id: -1 })
-  .limit(5)
-  .populate({
-      path: 'author', 
-      select: 'username', 
-      model: User, 
-  }).populate({
-      path: 'subCategory', 
-      select: 'name', 
-      model: sousCategory, 
-  })
-  .then(data => {
-      if (data) {
-          res.json({ result: true, data: data });
-      } else {
-          res.json({ result: false, error: 'Aucun DCM trouvé' });
-      }
- } )}
-)
+router.get('/lastDcm', (req,res)=> {
 
+    // Récupérez le numéro de page depuis les paramètres de requête
+  // Utilisez 0 comme valeur par défaut si aucun numéro de page n'est fourni
+  const page = parseInt(req.query.page) || 0;
+
+  // Définissez la taille de la page (le nombre de documents à récupérer par page)
+  const pageSize = 5;
+    // Dcm.find()
+    // .sort({ _id: -1 })
+    // .limit(5)
+    // Dcm.aggregate([{ $sample: { size: 20 } }])
+ 
+    Dcm.aggregate([
+      
+      {
+        $sort: { date: -1 }, // -1 pour un tri décroissant, 1 pour un tri croissant
+        
+      },
+      {
+        $skip: page * pageSize // Sautez les documents des pages précédentes
+      },
+      {
+        $limit: pageSize // Limitez le nombre de documents à la taille de la page
+      }
+    ])
+    .then(async data => {
+      const populatedData = await Dcm.populate(data, [
+        { path: 'author', select: 'username', model: User },
+        { path: 'subCategory', select: 'name', model: sousCategory }
+      ])
+    
+      if (populatedData) {
+        res.json({ result: true, data: populatedData });
+      } else {
+        res.json({ result: false, error: 'No random DCM found' });
+      }
+    })
+    .catch(error => res.json({ result: false, error: error.message }));
+});
+    
+      
 // Récupérer des dcm aléatoires 
 router.get('/random', (req, res) => {
-  Dcm.aggregate([{ $sample: { size: 20 } }])
+
+  Dcm.aggregate([{ $sample: { size: 5 } }])
     .then(async data => {
       const populatedData = await Dcm.populate(data, [
         { path: 'author', select: 'username', model: User },
@@ -89,6 +111,13 @@ router.get('/random', (req, res) => {
 // Récupérer les dcm les plus likés de tous les temps : classement par la meilleure différence 
 // entre positif et négatif
 router.get('/mostLiked', (req,res)=> {
+
+  // Récupérez le numéro de page depuis les paramètres de requête
+  // Utilisez 0 comme valeur par défaut si aucun numéro de page n'est fourni
+  const page = parseInt(req.query.page) || 0;
+
+  // Définissez la taille de la page (le nombre de documents à récupérer par page)
+  const pageSize = 5;
     Dcm.aggregate([
         {
             $addFields: {
@@ -99,8 +128,16 @@ router.get('/mostLiked', (req,res)=> {
           }
         },
         {
-          $sort: { difference: -1 } // -1 pour un tri décroissant, 1 pour un tri croissant
+          $sort: { difference: -1 }, // -1 pour un tri décroissant, 1 pour un tri croissant
+          
+        },
+        {
+          $skip: page * pageSize // Sautez les documents des pages précédentes
+        },
+        {
+          $limit: pageSize // Limitez le nombre de documents à la taille de la page
         }
+
       ]).then(async data => {
         const populatedData = await Dcm.populate(data, [
           { path: 'author', select: 'username', model: User },
@@ -119,6 +156,13 @@ router.get('/mostLiked', (req,res)=> {
 // Récupérer les dcm COUP DE COEUR les plus likés de tous les temps : classement par la meilleure différence 
 // entre positif et négatif
 router.get('/mostLikedHeart', (req,res)=> {
+    // Récupérez le numéro de page depuis les paramètres de requête
+  // Utilisez 0 comme valeur par défaut si aucun numéro de page n'est fourni
+  const page = parseInt(req.query.page) || 0;
+
+  // Définissez la taille de la page (le nombre de documents à récupérer par page)
+  const pageSize = 5;
+
     Dcm.aggregate([
         {
             $match: { type: true } ,// Filtrer les documents où type est true (coup de coeur)
@@ -133,7 +177,12 @@ router.get('/mostLikedHeart', (req,res)=> {
         },
         {
           $sort: { difference: -1 } // -1 pour un tri décroissant, 1 pour un tri croissant
-        }
+        },
+       { $skip: page * pageSize // Sautez les documents des pages précédentes
+      },
+      {
+        $limit: pageSize // Limitez le nombre de documents à la taille de la page
+      }
       ]).then(async data => {
         const populatedData = await Dcm.populate(data, [
           { path: 'author', select: 'username', model: User },
@@ -153,6 +202,12 @@ router.get('/mostLikedHeart', (req,res)=> {
 // Récupérer les dcm COUP DE GUEULE les plus likés de tous les temps : classement par la meilleure différence 
 // entre positif et négatif
 router.get('/mostLikedHate', (req,res)=> {
+    // Récupérez le numéro de page depuis les paramètres de requête
+  // Utilisez 0 comme valeur par défaut si aucun numéro de page n'est fourni
+  const page = parseInt(req.query.page) || 0;
+
+  // Définissez la taille de la page (le nombre de documents à récupérer par page)
+  const pageSize = 5;
     Dcm.aggregate([
         {
             $match: { type: false } ,// Filtrer les documents où type est false(coup de gueule)
@@ -167,7 +222,12 @@ router.get('/mostLikedHate', (req,res)=> {
         },
         {
           $sort: { difference: -1 } // -1 pour un tri décroissant, 1 pour un tri croissant
-        }
+        }, 
+        {  $skip: page * pageSize // Sautez les documents des pages précédentes
+      },
+      {
+        $limit: pageSize // Limitez le nombre de documents à la taille de la page
+      }
       ]).then(async data => {
         const populatedData = await Dcm.populate(data, [
           { path: 'author', select: 'username', model: User },
@@ -263,14 +323,13 @@ router.delete('/deletedcm/:id', authenticateRegular, (req, res) => {
 // ROUTE LIKE DCM
 router.put("/like", authenticateRegular, (req, res) => {
     const  dcmId  = req.body.dcmId;
+    const username = req.body.username
     console.log('Route dcm like in process' )
   
     // Check que l'id de la dcm existe sinon renvoie une erreur
     Dcm.findById(dcmId)
       .then((dcm) => {
-        // console.log(dcm)
         if (!dcm) {
-          // console.log('blablaba')
           return res.status(404).json({ message: "DCM non trouvé." });
         }
 
@@ -290,6 +349,20 @@ router.put("/like", authenticateRegular, (req, res) => {
             dcm.dislikes.splice(dislikeIndex, 1);
           }
           dcm.likes.push(req.userId);
+
+
+          
+
+          
+            const notification = new Notification({
+              userId: dcm.author,
+              message: `Votre DCM a reçu un like de la part de ${req.body.username}.`,
+            });
+            // console.log('notif',notification)
+            notification.save();
+          
+
+
         }
         //enregistrer dans la base de donnee
         return dcm.save();
@@ -361,6 +434,7 @@ router.put("/like", authenticateRegular, (req, res) => {
         res.status(500).json({ message: "Erreur serveur.", error });
       });
   });
+
 
 module.exports = router;
 

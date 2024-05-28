@@ -11,6 +11,7 @@ var usersRouter = require("./routes/users");
 var categoryRouter = require("./routes/category");
 var sousCategoryRouter = require("./routes/sousCategory");
 var dcmRouter = require("./routes/dcm");
+var notificationRouter = require("./routes/notification")
 var configRouter = require('./routes/config')
 var app = express();
 
@@ -29,6 +30,7 @@ app.use("/category", categoryRouter);
 app.use("/souscategory", sousCategoryRouter);
 app.use("/dcm", dcmRouter);
 app.use("/config", configRouter);
+app.use("/notification", notificationRouter)
 
 
 
