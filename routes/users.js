@@ -5,7 +5,7 @@ const User = require("../models/users");
 const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
-const { authenticateToken, createToken } = require('../modules/authentication')
+const { createToken } = require('../modules/authentication')
 
 
 function validateEmail(email) {

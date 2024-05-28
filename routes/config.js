@@ -2,26 +2,19 @@ var express = require('express');
 var router = express.Router();
 
 const Config = require('../models/config');
-const { authenticateToken } = require('../modules/authentication');
+const { authenticateAdmin } = require('../modules/authentication');
 
-router.get('/:configName', (req, res) => {
+router.get('/:configName', authenticateAdmin, (req, res) => {
     Config.findOne({name: req.params.configName})
     .then(data => {
-        data ? res.json({value: data.config}) : res.status(404).json({result: false, error: "Cette configuration n'existe pas"})
+        data ? res.json({value: data.value}) : res.status(404).json({result: false, error: "Cette configuration n'existe pas"})
     })
 })
 
-router.post('/:configName', authenticateToken, (req, res) => {
-    Config.findOne({name: req.params.configName})
-    .then(data => {
-        if(data) {
-            const updatedConfig = new Config(req.body.updatedConfig)
-            updatedConfig.save()
-            .then(res.json({result: true}))
-        } else {
-            res.status(404).json({result: false, error: "Cette configuration n'existe pas"})
-        }
-    })
+router.post('/:configName', authenticateAdmin, (req, res) => {
+    console.log(req.body.config)
+    Config.findOneAndUpdate({name: req.params.configName}, {value: JSON.stringify(req.body.config)})
+    .then(data => {console.log('')} )
 })
 
 module.exports = router;
