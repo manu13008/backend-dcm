@@ -8,6 +8,7 @@ const { authenticateToken } = require('../modules/authentication')
 
 const Dcm = require('../models/dcm');
 const sousCategory = require('../models/sousCategory');
+const SousCategory = require('../models/sousCategory');
 
 
 // poster un DCM
@@ -44,40 +45,27 @@ router.post('/send', authenticateToken, function(req,res) {
     })   
 })
 // recuperer tout les Derniers DCM
-router.get('/lastDcm', (req,res)=> {
-    Dcm.find()
-    .sort({ _id: -1 })
-    .limit(5)
-    .populate({
-        path: 'author', 
-        select: 'username', 
-        model: User, 
-    }).populate({
-        path: 'subCategory', 
-        select: 'name', 
-        model: sousCategory, 
-    })
-    .then(data => {
-        if (data) {
-            const formattedData = data.map(item => {
-                // Convertir la date au format souhaité (JJ/MM/YYYY)
-                const formattedDate = new Date(item.date).toLocaleDateString('fr-FR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                });
-                return {
-                    ...item._doc,
-                    date: formattedDate,
-                };
-            });
-            res.json({ result: true, data: formattedData });
-        } else {
-            res.json({ result: false, error: 'Aucun DCM trouvé' });
-        }
-    })
-})
-
+router.get('/lastDcm', (req, res) => {
+  Dcm.find()
+  .sort({ _id: -1 })
+  .limit(5)
+  .populate({
+      path: 'author', 
+      select: 'username', 
+      model: User, 
+  }).populate({
+      path: 'subCategory', 
+      select: 'name', 
+      model: sousCategory, 
+  })
+  .then(data => {
+      if (data) {
+          res.json({ result: true, data: data });
+      } else {
+          res.json({ result: false, error: 'Aucun DCM trouvé' });
+      }
+ } )}
+)
 
 // Récupérer des dcm aléatoires 
 router.get('/random', (req, res) => {
@@ -313,7 +301,33 @@ router.put("/like", authenticateToken, (req, res) => {
         res.status(500).json({ message: "Erreur serveur.", error });
       });
   });
-  
+
+  router.get('/likes/:username', (req, res) => {
+    const username = req.params.username; 
+    const regex = new RegExp(username, 'i');
+    
+    User.findOne({ username: regex })
+        .then(user => {
+            if (!user) {
+                return res.status(404).json({ result: false, error: "Aucun utilisateur pour ce pseudonyme" });
+            }
+            return Dcm.find({ likes: user._id });
+        })
+        .then(dcmData => {
+            return Dcm.populate(dcmData, [
+                { path: 'author', select: 'username', model: User },
+                { path: 'subCategory', select: 'name', model: SousCategory }
+            ]);
+        })
+        .then(populatedData => {
+            res.status(200).json({ result: true, dcm: populatedData });
+        })
+        .catch(error => {
+            res.status(500).json({ result: false, error: error.message });
+        });
+});
+
+
   // Route POUR DISLIKER DCM
   router.put("/dislike", authenticateToken, (req, res) => {
     const  dcmId  = req.body.dcmId;
