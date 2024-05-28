@@ -4,6 +4,6 @@ const configSchema = mongoose.Schema({
     name: String,
     value: String,
 });
-const Config = mongoose.model('config', configSchema);
+const Config = mongoose.model('configs', configSchema);
 
 module.exports = Config;
