@@ -14,8 +14,8 @@ function authenticateToken(req, res, next) {
     next()
 }
 
-function createToken(userId) {
-    const token = jwt.sign({userId: userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+function createToken(params) {
+    const token = jwt.sign({userId: params.userId, isAdmin: params.isAdmin }, process.env.JWT_SECRET, { expiresIn: '24h' });
     return token
 }
 
