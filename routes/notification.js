@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
-var express = require('express');
-var router = express.Router();
-const Notification = require('../models/notification');
-const { authenticateToken } = require('../modules/authentication')
+// const mongoose = require('mongoose');
+// var express = require('express');
+// var router = express.Router();
+// const Notification = require('../models/notification');
+// const { authenticateToken } = require('../modules/authentication')
 
 
 
@@ -15,4 +15,4 @@ const { authenticateToken } = require('../modules/authentication')
 //     }
 //   });
 
-  module.exports = router;
+//   module.exports = router;

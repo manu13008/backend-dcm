@@ -30,7 +30,7 @@ app.use("/category", categoryRouter);
 app.use("/souscategory", sousCategoryRouter);
 app.use("/dcm", dcmRouter);
 app.use("/config", configRouter);
-app.use("/notification", notificationRouter)
+// app.use("/notification", notificationRouter)
 
 
 
