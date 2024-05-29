@@ -100,7 +100,7 @@ router.get('/lastDcm', (req,res)=> {
 // Récupérer des dcm aléatoires 
 router.get('/random', (req, res) => {
 
-  Dcm.aggregate([{ $sample: { size: 5 } }, { $match: { mod_isCensored: false } }])
+  Dcm.aggregate([{ $sample: { size: 5 }}, { $match: { mod_isCensored: false } }])
     .then(async data => {
       const populatedData = await Dcm.populate(data, [
         { path: 'author', select: 'username', model: User },
@@ -311,8 +311,9 @@ router.get('/user/:username', (req, res) => {
 
 
 // supprimer une dcm
-router.delete('/deletedcm/:id', authenticate, (req, res) => {
+router.delete('/deletedcm/:id', authenticate(), (req, res) => {
     const userId = req.userId;
+    console.log('alal')
 
   Dcm.findOne({ _id: req.params.id })
       .then(data => {
@@ -321,6 +322,7 @@ router.delete('/deletedcm/:id', authenticate, (req, res) => {
           }
 
           if (data.author.toString() !== userId) {
+            console.log(data.author.toString())
               return res.status(401).json({ result: false, error: "Vous n'êtes pas autorisé à supprimer cette DCM" });
           }
 
@@ -339,7 +341,7 @@ router.delete('/deletedcm/:id', authenticate, (req, res) => {
 
 
 // ROUTE LIKE DCM
-router.put("/like", authenticate, (req, res) => {
+router.put("/like", authenticate(), (req, res) => {
     const  dcmId  = req.body.dcmId;
     const username = req.body.username
     console.log('Route dcm like in process' )
@@ -420,7 +422,7 @@ router.put("/like", authenticate, (req, res) => {
 
 
   // Route POUR DISLIKER DCM
-  router.put("/dislike", authenticate, (req, res) => {
+  router.put("/dislike", authenticate(), (req, res) => {
     const  dcmId  = req.body.dcmId;
    
     Dcm.findById(dcmId)
