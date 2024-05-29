@@ -66,7 +66,10 @@ router.get('/lastDcm', (req,res)=> {
     // Dcm.aggregate([{ $sample: { size: 20 } }])
  
     Dcm.aggregate([
-      
+      {
+        $match: { mod_isCensored: false } 
+      },
+
       {
         $sort: { date: -1 }, // -1 pour un tri décroissant, 1 pour un tri croissant
         
@@ -97,7 +100,7 @@ router.get('/lastDcm', (req,res)=> {
 // Récupérer des dcm aléatoires 
 router.get('/random', (req, res) => {
 
-  Dcm.aggregate([{ $sample: { size: 5 } }])
+  Dcm.aggregate([{ $sample: { size: 5 } }, { $match: { mod_isCensored: false } }])
     .then(async data => {
       const populatedData = await Dcm.populate(data, [
         { path: 'author', select: 'username', model: User },
@@ -142,6 +145,9 @@ router.get('/mostLiked', (req,res)=> {
         },
         {
           $limit: pageSize // Limitez le nombre de documents à la taille de la page
+        },
+        {
+          $match: { mod_isCensored: false } 
         }
 
       ]).then(async data => {
@@ -171,7 +177,10 @@ router.get('/mostLikedHeart', (req,res)=> {
 
     Dcm.aggregate([
         {
-            $match: { type: true, isCensored: false } ,// Filtrer les documents où type est true (coup de coeur)
+            $match: { type: true} ,// Filtrer les documents où type est true (coup de coeur)
+        },
+        {
+          $match: { mod_isCensored: false } 
         },
         {
             $addFields: {
@@ -216,7 +225,10 @@ router.get('/mostLikedHate', (req,res)=> {
   const pageSize = 5;
     Dcm.aggregate([
         {
-            $match: { type: false, isCensored: false } ,// Filtrer les documents où type est false(coup de gueule)
+            $match: { type: false } ,// Filtrer les documents où type est false(coup de gueule)
+        },
+        {
+          $match: { mod_isCensored: false }
         },
         {
             $addFields: {
@@ -283,7 +295,7 @@ router.get('/user/:username', (req, res) => {
           if (!user) {
               res.json({ result: false, error: "Aucun utilisateur pour ce pseudonyme" });
           } else {
-              Dcm.find({ author: user._id, isCensored: false })
+              Dcm.find({ author: user._id, mod_isCensored: false })
                   .then(dcmData => {
                       Dcm.populate(dcmData, [
                           { path: 'author', select: 'username', model: User },
