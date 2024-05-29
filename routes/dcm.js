@@ -5,7 +5,7 @@ require('../models/dcm');
 const User=require('../models/users');
 const Notification = require('../models/notification');
 
-const { authenticateRegular } = require('../modules/authentication')
+const { authenticate } = require('../modules/authentication')
 
 const Dcm = require('../models/dcm');
 const sousCategory = require('../models/sousCategory');
@@ -13,7 +13,7 @@ const SousCategory = require('../models/sousCategory');
 
 
 // poster un DCM
-router.post('/send', authenticateRegular, function(req,res) {
+router.post('/send', authenticate('allowAnonym'), function(req,res) {
     Dcm.findOne({content: req.body.content}).then(existingDcm => {
         if(existingDcm === null ){
             const newDcm = new Dcm({
@@ -293,7 +293,7 @@ router.get('/user/:username', (req, res) => {
 
 
 // supprimer une dcm
-router.delete('/deletedcm/:id', authenticateRegular, (req, res) => {
+router.delete('/deletedcm/:id', authenticate, (req, res) => {
     const userId = req.userId;
 
   Dcm.findOne({ _id: req.params.id })
@@ -321,7 +321,7 @@ router.delete('/deletedcm/:id', authenticateRegular, (req, res) => {
 
 
 // ROUTE LIKE DCM
-router.put("/like", authenticateRegular, (req, res) => {
+router.put("/like", authenticate, (req, res) => {
     const  dcmId  = req.body.dcmId;
     const username = req.body.username
     console.log('Route dcm like in process' )
@@ -402,7 +402,7 @@ router.put("/like", authenticateRegular, (req, res) => {
 
 
   // Route POUR DISLIKER DCM
-  router.put("/dislike", authenticateRegular, (req, res) => {
+  router.put("/dislike", authenticate, (req, res) => {
     const  dcmId  = req.body.dcmId;
    
     Dcm.findById(dcmId)
