@@ -25,7 +25,7 @@ router.post('/send', authenticateRegular, function(req,res) {
                 likes:[],
                 dislikes:[],
                 date: Date.now(),
-                type: req.body.type === 'true',
+                type: req.body.type ,
                 isAnonym : req.body.isAnonym,
             })
             newDcm.save().then(savedDcm => {
@@ -357,6 +357,7 @@ router.put("/like", authenticateRegular, (req, res) => {
             const notification = new Notification({
               userId: dcm.author,
               message: `Votre DCM a reçu un like de la part de ${req.body.username}.`,
+              _dcm : dcm._id
             });
             // console.log('notif',notification)
             notification.save();
@@ -434,6 +435,23 @@ router.put("/like", authenticateRegular, (req, res) => {
         res.status(500).json({ message: "Erreur serveur.", error });
       });
   });
+
+
+
+  router.get('/uniqueDcm/:dcmId', (req, res) => {
+    const dcmId = req.params.dcmId;
+  Dcm.findById( dcmId ) 
+      .then(dcm => {
+          if (!dcm) {
+            console.log('tesssst',dcm)
+              res.json({ result: false, error: "Dcm introuvable" });
+          } else { 
+            res.json({result : true, dcm})}
+          })
+        }
+      )
+
+
 
 
 module.exports = router;
