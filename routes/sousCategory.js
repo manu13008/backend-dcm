@@ -105,5 +105,12 @@ router.get('/:sousCategoryName', (req, res) => {
         })
 
 })
+
+router.get('/:id/actors', (req,res) => {
+    sousCategory.findOne({_id: req.params.id})
+    .then(data => {
+        res.json({actors: data.authors})
+    })
+})
     
 module.exports = router;
