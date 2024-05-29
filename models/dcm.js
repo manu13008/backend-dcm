@@ -11,6 +11,10 @@ const dcmSchema = mongoose.Schema({
     date: Date,
     type: {type: Boolean ,required: true },
     isAnonym : {type: Boolean},
+    mod_isSensitiveContent: Boolean,
+    mod_isCensored: Boolean,
+    mod_flags: Array
+
 
 })
 const dcm = mongoose.model('dcm', dcmSchema);
