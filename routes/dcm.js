@@ -100,7 +100,7 @@ router.get('/lastDcm', (req,res)=> {
 // Récupérer des dcm aléatoires 
 router.get('/random', (req, res) => {
 
-  Dcm.aggregate([{ $sample: { size: 5 } }, { $match: { mod_isCensored: false } }])
+  Dcm.aggregate([{ $match: { mod_isCensored: false } },{ $sample: { size: 5 } }])
     .then(async data => {
       const populatedData = await Dcm.populate(data, [
         { path: 'author', select: 'username', model: User },
