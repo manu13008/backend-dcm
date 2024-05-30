@@ -1,19 +1,17 @@
-const config = [
-    {
-        criterionName: 'hate',
-        isUsed: true,
-        useScore: false,
-        score: 0.5
-    },
-    {
-        criterionName: 'violence/graphic',
-        isUsed: true,
-        useScore: false,
-        score: 0.5
-    }
-]
-
-const criteria = config.filter((criterion) => {return criterion.isUsed})
+// const config = [
+//     {
+//         criterionName: 'hate',
+//         isUsed: true,
+//         useScore: false,
+//         score: 0.5
+//     },
+//     {
+//         criterionName: 'violence/graphic',
+//         isUsed: true,
+//         useScore: false,
+//         score: 0.5
+//     }
+// ]
 
 
 async function fetchGPT(string){
@@ -29,15 +27,24 @@ async function fetchGPT(string){
     return result.results
 }
 
-
+async function fetchConfig() {
+    const result = await fetch('http://localhost:3000/config/modCriteria').then(response => response.json())
+    return result.value
+}
 
 async function moderationEvaluate(content) {
     const gptAnalysis = await fetchGPT(content)
+    const config = await fetchConfig()
+    const criteria = config.filter((criterion) => {return criterion.isUsed})
     let result = {toCensor: false, criteria: []}
     criteria.forEach((criterion) => {
-        const isCriterionFlagged = !criterion.useScore && gptAnalysis[0].categories[criterion.criterionName]
-        const isScoreFlagged = criterion.useScore && gptAnalysis[0].category_scores[criterion.criterionName] >= criterion.score
+        const gptCriterionFlagged = gptAnalysis[0].categories[criterion.criterionName]
+        const gptScore = Number(gptAnalysis[0].category_scores[criterion.criterionName])
+
+        const isCriterionFlagged = criterion.isUsed && !criterion.useScore && gptCriterionFlagged
+        const isScoreFlagged = criterion.useScore && (gptScore >= Number(criterion.score))
         const isFlagged = isCriterionFlagged || isScoreFlagged
+        
         isFlagged && result.criteria.push(criterion.criterionName)
     })
     if(result.criteria.length > 0) {result.toCensor = true}
