@@ -392,13 +392,16 @@ router.put("/like", authenticate(), (req, res) => {
         }
         dcm.likes.push(req.userId);
 
-        const notification = new Notification({
-          userId: dcm.author,
-          message: `Votre DCM a reçu un like de la part de ${req.body.username}.`,
-          _dcm: dcm._id,
-        });
-        // console.log('notif',notification)
-        notification.save();
+        if (req.userId != dcm.author) {
+          const notification = new Notification({
+            userId: dcm.author,
+            message: `🔥 Votre DCM a reçu un like de la part de ${req.body.username}.`,
+            _dcm: dcm._id,
+          });
+          // console.log('notif',notification)
+          notification.save();
+        }
+  
       }
       //enregistrer dans la base de donnee
       return dcm.save();
