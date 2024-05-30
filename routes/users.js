@@ -6,7 +6,8 @@ const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 const { createToken } = require('../modules/authentication')
-
+const { authenticate } = require('../modules/authentication')
+const dcm = require('../models/dcm')
 
 function validateEmail(email) {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|fr)$/;
@@ -84,5 +85,31 @@ router.post("/signin", (req, res) => {
     }
   });
 });
+
+router.delete('/deleteuser', authenticate(), (req, res) => {
+  const userId = req.userId;
+  console.log('ID de l\'utilisateur:', userId);
+
+  // Supprimer le token de l'utilisateur
+  // Vous devez avoir une fonction pour supprimer le token de la base de données ou le rendre invalide
+
+  dcm.deleteMany({ author: userId })
+    .then(() => {
+      return User.findOneAndDelete({ _id: userId });
+    })
+    .then((deletedUser) => {
+      console.log('Utilisateur supprimé:', deletedUser); // Ajout du console.log pour vérifier l'utilisateur supprimé
+      if (deletedUser) {
+        res.json({ result: true, message: "Utilisateur et DCMs associés supprimés avec succès" });
+      } else {
+        res.status(404).json({ result: false, error: "Utilisateur non trouvé" });
+      }
+    })
+    .catch((error) => {
+      console.log('Erreur lors de la suppression:', error); // Ajout d'un console.log pour capturer les erreurs
+      res.status(500).json({ result: false, error: "Erreur lors de la suppression de l'utilisateur" });
+    });
+});
+
 
 module.exports = router;
