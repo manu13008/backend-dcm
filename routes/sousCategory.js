@@ -14,7 +14,6 @@ router.post("/name", function (req, res) {
         category: req.body.categorys,
       });
       newSousCategory.save().then((dataSousCategory) => {
-        console.log(req.body.categorys);
         res.json({ result: true, dataSousCategory });
       });
     } else {
@@ -27,7 +26,6 @@ router.post("/name", function (req, res) {
 router.post("/authors/:sousCategoryName", (req, res) => {
   let sousCategoryName = req.params.sousCategoryName.replaceAll("_", " ");
   sousCategory.findOne({ name: sousCategoryName }).then((sousCategory) => {
-    console.log(sousCategoryName);
     if (sousCategory === null) {
       res.json({ result: false, error: "Sous-category not found" });
     } else {
@@ -36,7 +34,6 @@ router.post("/authors/:sousCategoryName", (req, res) => {
       } else {
         sousCategory.authors.push(req.body.name);
         sousCategory.save().then((updatedSousCategory) => {
-          console.log(sousCategoryName);
           res.json({ result: true, allAuthors: updatedSousCategory.authors });
         });
       }
@@ -61,9 +58,7 @@ router.get("/oneCategory/:onecate", (req, res) => {
   const regex = new RegExp(onecate, "i");
   Category.findOne({ name: regex }).then((category) => {
     if (category) {
-      console.log("ok");
       sousCategory.find({ category: category._id }).then((sousCategoryData) => {
-        console.log("sousCategoryData : ", sousCategoryData);
         res.json({
           result: true,
           category: { name: category.name },
@@ -98,7 +93,6 @@ router.get("/:sousCategoryName", (req, res) => {
   const regex = new RegExp(sousCategoryName, "i");
   sousCategory.findOne({ name: regex }).then((data) => {
     if (data) {
-      console.log(data);
       res.json({
         result: true,
         sousCategory: { name: data.name, id: data._id },

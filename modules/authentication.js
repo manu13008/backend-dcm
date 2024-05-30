@@ -2,10 +2,8 @@ const jwt = require('jsonwebtoken');
 
 function authenticate(type = 'regular') {
   return (req, res, next) => {
-    console.log("salut")
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
-    console.log('lala')
 
 
     if(type !== 'allowAnonym' && !token) {
@@ -13,7 +11,6 @@ function authenticate(type = 'regular') {
     }
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-      console.log(user)
       if (err || (!user.isAdmin && type === 'mustBeAdmin')) {res.sendStatus(403).json({result: false, error: "Forbidden. Vous n'avez pas les droits requis"})}
       req.userId = user.userId;
       next()
