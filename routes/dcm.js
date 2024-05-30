@@ -9,7 +9,7 @@ const { authenticate } = require("../modules/authentication");
 
 const Dcm = require("../models/dcm");
 const sousCategory = require("../models/sousCategory");
-const SousCategory = require("../models/sousCategory");
+
 
 const { moderationEvaluate } = require("../modules/moderationGPT");
 
@@ -117,6 +117,7 @@ router.get("/random", (req, res) => {
 // Récupérer les dcm les plus likés de tous les temps : classement par la meilleure différence
 // entre positif et négatif
 router.get("/mostLiked", (req, res) => {
+  console.log('totoooo')
   // Récupérez le numéro de page depuis les paramètres de requête
   // Utilisez 0 comme valeur par défaut si aucun numéro de page n'est fourni
   const page = parseInt(req.query.page) || 0;
@@ -134,6 +135,9 @@ router.get("/mostLiked", (req, res) => {
       },
     },
     {
+      $match: { mod_isCensored: false },
+    },
+    {
       $sort: { difference: -1 }, // -1 pour un tri décroissant, 1 pour un tri croissant
     },
     {
@@ -141,10 +145,8 @@ router.get("/mostLiked", (req, res) => {
     },
     {
       $limit: pageSize, // Limitez le nombre de documents à la taille de la page
-    },
-    {
-      $match: { mod_isCensored: false },
-    },
+    }
+
   ]).then(async (data) => {
     const populatedData = await Dcm.populate(data, [
       { path: "author", select: "username", model: User },
@@ -428,7 +430,7 @@ router.get("/likes/:username", (req, res) => {
     .then((dcmData) => {
       return Dcm.populate(dcmData, [
         { path: "author", select: "username", model: User },
-        { path: "subCategory", select: "name", model: SousCategory },
+        { path: "subCategory", select: "name", model: sousCategory },
       ]);
     })
     .then((populatedData) => {
