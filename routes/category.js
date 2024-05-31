@@ -5,7 +5,6 @@ require('../models/category');
 const Category = require('../models/category');
 
 router.post('/name', function(req, res,) {
- 
  Category.findOne({name: req.body.name}).then(data => {
   if (data === null){
 
@@ -21,7 +20,7 @@ router.post('/name', function(req, res,) {
 })
 })
 
-
+//recuperer toutes les DCM
   router.get('/all', (req, res) => {
     Category.find({})
         .then(data => {
@@ -35,7 +34,6 @@ router.post('/name', function(req, res,) {
     })
 
 //findOne Category name en sorti ID
-
     router.get('/:categoryName', (req, res) => {
       let categoryName = req.params.categoryName.replaceAll('_',' ');
       const regex = new RegExp(categoryName, 'i');
@@ -49,5 +47,4 @@ router.post('/name', function(req, res,) {
           })
 
   })
-  //findone Category name en srotie ID
 module.exports = router;
