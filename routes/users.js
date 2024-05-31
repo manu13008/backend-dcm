@@ -20,24 +20,17 @@ router.post("/signup", (req, res) => {
     res.json({ result: false, error: "Tous les champs ne sont pas remplis" });
     return;
   }
-
   const { username, email, password } = req.body;
-  // Validation de l'email
   if (!validateEmail(email)) {
     res.json({ result: false, error: "Format d'adresse e-mail invalide" });
     return;
   }
-
-  // Vérifiez si le nom d'utilisateur ou l'email existent déjà dans la base de données
   User.findOne({ $or: [{ email: email }, { username: username }] })
     .then((data) => {
       if (data) {
-        // Si un utilisateur avec cet email ou ce nom d'utilisateur existe déjà, renvoyez une erreur
         res.json({ result: false, error: "Adresse e-mail ou nom d'utilisateur déjà utilisé" });
       } else {
-        // Sinon, créez un nouveau compte utilisateur
         const hash = bcrypt.hashSync(password, 10);
-
         const newUser = new User({
           email: email,
           username: username,
@@ -57,7 +50,6 @@ router.post("/signup", (req, res) => {
       }
     })
     .catch((error) => {
-      // Gérer les erreurs de la base de données, par exemple une erreur de connexion à la base de données
       res.status(500).json({ result: false, error: "Erreur de base de donnée" });
     });
 });
@@ -85,31 +77,5 @@ router.post("/signin", (req, res) => {
     }
   });
 });
-
-router.delete('/deleteuser', authenticate(), (req, res) => {
-  const userId = req.userId;
-  console.log('ID de l\'utilisateur:', userId);
-
-  // Supprimer le token de l'utilisateur
-  // Vous devez avoir une fonction pour supprimer le token de la base de données ou le rendre invalide
-
-  dcm.deleteMany({ author: userId })
-    .then(() => {
-      return User.findOneAndDelete({ _id: userId });
-    })
-    .then((deletedUser) => {
-      console.log('Utilisateur supprimé:', deletedUser); // Ajout du console.log pour vérifier l'utilisateur supprimé
-      if (deletedUser) {
-        res.json({ result: true, message: "Utilisateur et DCMs associés supprimés avec succès" });
-      } else {
-        res.status(404).json({ result: false, error: "Utilisateur non trouvé" });
-      }
-    })
-    .catch((error) => {
-      console.log('Erreur lors de la suppression:', error); // Ajout d'un console.log pour capturer les erreurs
-      res.status(500).json({ result: false, error: "Erreur lors de la suppression de l'utilisateur" });
-    });
-});
-
 
 module.exports = router;

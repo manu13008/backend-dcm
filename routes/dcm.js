@@ -4,13 +4,9 @@ var router = express.Router();
 require("../models/dcm");
 const User = require("../models/users");
 const Notification = require("../models/notification");
-
 const { authenticate } = require("../modules/authentication");
-
 const Dcm = require("../models/dcm");
 const sousCategory = require("../models/sousCategory");
-
-
 const { moderationEvaluate } = require("../modules/moderationGPT");
 
 // poster un DCM
@@ -53,16 +49,9 @@ router.post("/send", authenticate("allowAnonym"), async function (req, res) {
 // recuperer tout les Derniers DCM
 router.get("/lastDcm", (req, res) => {
   // Récupérez le numéro de page depuis les paramètres de requête
-  // Utilisez 0 comme valeur par défaut si aucun numéro de page n'est fourni
   const page = parseInt(req.query.page) || 0;
-
   // Définissez la taille de la page (le nombre de documents à récupérer par page)
   const pageSize = 5;
-  // Dcm.find()
-  // .sort({ _id: -1 })
-  // .limit(5)
-  // Dcm.aggregate([{ $sample: { size: 20 } }])
-
   Dcm.aggregate([
     {
       $match: { mod_isCensored: false },
@@ -117,11 +106,9 @@ router.get("/random", (req, res) => {
 // Récupérer les dcm les plus likés de tous les temps : classement par la meilleure différence
 // entre positif et négatif
 router.get("/mostLiked", (req, res) => {
-  console.log('totoooo')
   // Récupérez le numéro de page depuis les paramètres de requête
   // Utilisez 0 comme valeur par défaut si aucun numéro de page n'est fourni
   const page = parseInt(req.query.page) || 0;
-
   // Définissez la taille de la page (le nombre de documents à récupérer par page)
   const pageSize = 5;
   Dcm.aggregate([
@@ -170,10 +157,8 @@ router.get("/mostLikedHeart", (req, res) => {
   // Récupérez le numéro de page depuis les paramètres de requête
   // Utilisez 0 comme valeur par défaut si aucun numéro de page n'est fourni
   const page = parseInt(req.query.page) || 0;
-
   // Définissez la taille de la page (le nombre de documents à récupérer par page)
   const pageSize = 5;
-
   Dcm.aggregate([
     {
       $match: { type: true }, // Filtrer les documents où type est true (coup de coeur)
@@ -204,7 +189,6 @@ router.get("/mostLikedHeart", (req, res) => {
       { path: "author", select: "username", model: User },
       { path: "subCategory", select: "name", model: sousCategory },
     ]);
-
     if (populatedData) {
       res.json({ result: true, data: populatedData });
     } else {
@@ -268,14 +252,11 @@ router.get("/mostLikedHate", (req, res) => {
 });
 
 // recuperer tout les DCM d'une sous catégories
-
 router.get("/:sousCategoryName", (req, res) => {
   let sousCategoryName = req.params.sousCategoryName.replaceAll("_", " ");
   const regex = new RegExp(sousCategoryName, "i");
-
   sousCategory.findOne({ name: regex }).then((data) => {
     if (data) {
-      console.log("ok");
       Dcm.find({ subCategory: data._id })
         .populate({ path: "author", select: "username", model: User })
         .populate({ path: "subCategory", select: "name", model: sousCategory })
@@ -332,8 +313,6 @@ router.get("/user/:username", (req, res) => {
 // supprimer une dcm
 router.delete("/deletedcm/:id", authenticate(), (req, res) => {
   const userId = req.userId;
-  console.log("alal");
-
   Dcm.findOne({ _id: req.params.id })
     .then((data) => {
       if (!data) {
@@ -342,9 +321,7 @@ router.delete("/deletedcm/:id", authenticate(), (req, res) => {
           error: "Pas de DCM trouvée pour cet identifiant",
         });
       }
-
       if (data.author.toString() !== userId) {
-        console.log(data.author.toString());
         return res
           .status(401)
           .json({
@@ -369,18 +346,14 @@ router.delete("/deletedcm/:id", authenticate(), (req, res) => {
 router.put("/like", authenticate(), (req, res) => {
   const dcmId = req.body.dcmId;
   const username = req.body.username;
-  console.log("Route dcm like in process");
-
   // Check que l'id de la dcm existe sinon renvoie une erreur
   Dcm.findById(dcmId)
     .then((dcm) => {
       if (!dcm) {
         return res.status(404).json({ message: "DCM non trouvé." });
       }
-
       //par userId
       const index = dcm.likes.indexOf(req.userId);
-
       if (index !== -1) {
         //  déjà liké, donc on retire le like
         dcm.likes.splice(index, 1);
@@ -400,7 +373,6 @@ router.put("/like", authenticate(), (req, res) => {
         // console.log('notif',notification)
         notification.save();
       }
-      //enregistrer dans la base de donnee
       return dcm.save();
     })
     .then((dcm) => {
@@ -444,15 +416,12 @@ router.get("/likes/:username", (req, res) => {
 // Route POUR DISLIKER DCM
 router.put("/dislike", authenticate(), (req, res) => {
   const dcmId = req.body.dcmId;
-
   Dcm.findById(dcmId)
     .then((dcm) => {
       if (!dcm) {
         return res.status(404).json({ message: "DCM non trouvé." });
       }
-
       const index = dcm.dislikes.indexOf(req.userId);
-
       if (index !== -1) {
         // LE USER adeja dislike , on retire le dislike
         dcm.dislikes.splice(index, 1);
@@ -464,7 +433,6 @@ router.put("/dislike", authenticate(), (req, res) => {
         }
         dcm.dislikes.push(req.userId);
       }
-
       return dcm.save();
     })
     .then((dcm) => {
@@ -479,7 +447,6 @@ router.get("/uniqueDcm/:dcmId", (req, res) => {
   const dcmId = req.params.dcmId;
   Dcm.findById(dcmId).then((dcm) => {
     if (!dcm) {
-      console.log("tesssst", dcm);
       res.json({ result: false, error: "Dcm introuvable" });
     } else {
       res.json({ result: true, dcm });
