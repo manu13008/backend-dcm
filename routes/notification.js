@@ -79,7 +79,7 @@ router.get('/all/:userId', async (req, res) => {
 
 
 
-
+//Route qui marque les notifications unread comme read. Route appelée quand je vais sur l'onglet notifications
 router.put('/all/:userId', async (req, res) => {
   
     const userId = req.params.userId;
@@ -93,7 +93,7 @@ router.put('/all/:userId', async (req, res) => {
       { $set: { isRead: true } } // Modification à appliquer
     );
 
-    if (updateResult.nModified > 0) {
+    if (updateResult) {
       return res.status(200).json({ result: true, notifications : updateResult, message: 'Notifications updated successfully' });
     } else {
       return res.status(404).json({ result: false, message: 'No unread notifications found for the user' });
