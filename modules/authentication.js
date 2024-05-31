@@ -6,8 +6,12 @@ function authenticate(type = 'regular') {
     const token = authHeader && authHeader.split(' ')[1];
 
 
-    if(type !== 'allowAnonym' && !token) {
-      res.sendStatus(401).json('Unauthorized')
+    if(type != 'allowAnonym' && !token) {
+      res.sendStatus(401).json({error: 'Unauthorized'})
+    }
+
+    if(type === 'allowAnonym') {
+      return next()
     }
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
