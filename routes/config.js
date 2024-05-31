@@ -3,6 +3,7 @@ var router = express.Router();
 const sousCategory = require('../models/sousCategory')
 const Category = require('../models/category')
 const dcm = require('../models/dcm')
+const User = require('../models/users')
 const { moderationEvaluate } = require('../modules/moderationGPT');
 
 const Config = require('../models/config');
@@ -65,6 +66,23 @@ router.get('/getCensoredDcms', (req,res) => {
 
 router.get('/allowContent/:id', (req,res) => {
     dcm.findOneAndUpdate({_id: req.params.id}, {mod_isCensored: false})
+    .then(data => res.json({result: true}))
+})
+
+router.get('/allAdmins', (req, res) => {
+    User.find({isAdmin: true})
+    .then(data => {
+        res.json(data.map((user) => user.username))
+    })
+})
+
+router.put('/addAdmin/:username', (req,res) => {
+    User.findOneAndUpdate({username: req.params.username}, {isAdmin: true})
+    .then(res.json({result: true}))
+})
+
+router.put('/removeAdmin/:username', (req,res) => {
+    User.findOneAndUpdate({username: req.params.username}, {isAdmin: false})
     .then(data => res.json({result: true}))
 })
 
